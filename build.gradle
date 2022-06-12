@@ -24,6 +24,9 @@ dependencies {
     implementation ('net.dv8tion:JDA:5.0.0-alpha.9') { //Discord bot library
         exclude module: 'opus-java'
     }
+    implementation 'org.json:json:20220320'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'org.apache.httpcomponents:httpmime:4.5.13'
 }
 
 jar{

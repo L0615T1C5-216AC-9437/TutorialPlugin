@@ -1,4 +1,5 @@
 import arc.Events;
+import arc.struct.ObjectMap;
 import arc.util.CommandHandler;
 import arc.util.Log;
 import mindustry.Vars;
@@ -8,9 +9,23 @@ import mindustry.game.Team;
 import mindustry.gen.Call;
 import mindustry.gen.Player;
 import mindustry.mod.Plugin;
+import mindustry.world.Tile;
+import mindustry.world.blocks.logic.LogicBlock;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class Core extends Plugin {
     public static DiscordBot discordBot = null;
+
+    private static final ObjectMap<String, Tutorial> tutorials = new ObjectMap<>();
 
     @Override
     public void init() {
@@ -77,7 +92,49 @@ public class Core extends Plugin {
     public void registerClientCommands(CommandHandler handler) {
         DiscordBot.registerClientCommands(handler);
         handler.<Player>register("test", "", (args, p) -> {
-            Call.constructFinish(Vars.world.tile(0), Blocks.worldProcessor, null, (byte) 0, Team.sharded, null);
+            Tile t = Vars.world.tile(0);
+            Call.constructFinish(t, Blocks.worldProcessor, null, (byte) 0, Team.sharded, null);
+            if (t.build instanceof LogicBlock.LogicBuild lb) {
+                lb.updateCode("");
+            }
         });
     }
+
+    private static void loadTutorials() {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpGet get = new HttpGet("https://api.github.com/repositories/502487703/contents/tutorials");
+            try {
+                HttpResponse response = client.execute(get);
+                String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                JSONArray ja = new JSONArray(responseBody);
+
+                for (int i = 0; i < ja.length(); i++) {
+                    JSONObject jo = ja.getJSONObject(i);
+                    addTutorial(jo.getString("download_url"));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void addTutorial(String link) {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpGet get = new HttpGet(link);
+            try {
+                HttpResponse response = client.execute(get);
+                String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                JSONObject jo = new JSONObject(responseBody);
+                tutorials.put(jo.getString("name"), new Tutorial(jo.getString("description"), jo.getString("author"), jo.getBoolean("debug"), jo.getString("code")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private record Tutorial(String desc, String author, boolean debug, String code) {}
 }

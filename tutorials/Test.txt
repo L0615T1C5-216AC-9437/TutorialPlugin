@@ -1,6 +1,0 @@
-setrate 100
-cutscene pan 100 100 0.06 0
-wait 0.5
-cutscene stop 100 100  0.06 0
-wait 10
-jump 1 always x false

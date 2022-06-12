@@ -1,0 +1,8 @@
+{
+  "category": "Testing",
+  "name": "test",
+  "description": "n/a",
+  "author": "L0615T1C5.216AC#9437",
+  "debug": true,
+  "code": "setrate 100\ncutscene pan 100 100 0.06 0\nwait 0.5\ncutscene stop 100 100  0.06 0\nwait 10\njump 1 always x false\n"
+}

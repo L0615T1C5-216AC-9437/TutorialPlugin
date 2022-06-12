@@ -72,7 +72,7 @@ public class DiscordBot extends ListenerAdapter {
                 if (console == null) {
                     Log.err("No Text Channel with the ID " + consoleID + " found in " + guild.getName());
                 }
-                console.sendMessage("Discord bot loaded for server `" + Administration.Config.name.string() + "` port:" + Administration.Config.port.num()).queue();
+                console.sendMessage("Discord bot loaded for server `" + Administration.Config.serverName.string() + "` port:" + Administration.Config.port.num()).queue();
             }
         }
     }
